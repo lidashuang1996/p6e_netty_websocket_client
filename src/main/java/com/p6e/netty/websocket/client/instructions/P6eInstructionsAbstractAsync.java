@@ -3,69 +3,80 @@ package com.p6e.netty.websocket.client.instructions;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public abstract class P6eInstructionsAbstractAsync extends P6eInstructionsAbstract {
+public abstract class P6eInstructionsAbstractAsync
+        extends P6eInstructionsAbstract implements P6eInstructionsShell, P6eInstructions  {
 
-    protected ThreadPoolExecutor executor;
+    protected final static ThreadPoolExecutor executor =
+            (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 
     public P6eInstructionsAbstractAsync() {
         this(10);
     }
 
     public P6eInstructionsAbstractAsync(int nThreads) {
-        this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads);
     }
 
     @Override
-    public void onOpen(String id) {
-        executor.execute(() -> onOpenAsync(id));
+    public void __onOpen__(String id) {
+        executor.execute(() -> {
+            this.onOpen(id);
+            System.gc();
+        });
     }
 
     @Override
-    public void onClose(String id) {
-        executor.execute(() -> onCloseAsync(id));
-        executor.shutdown();
+    public void __onClose__(String id) {
+        executor.execute(() -> {
+            this.onClose(id);
+            System.gc();
+        });
     }
 
     @Override
-    public void onError(String id, Throwable throwable) {
-        executor.execute(() -> onErrorAsync(id, throwable));
+    public void __onError__(String id, Throwable throwable) {
+        executor.execute(() -> {
+            this.onOpen(id);
+            System.gc();
+        });
     }
 
     @Override
-    public void onMessageText(String id, String message) {
-        executor.execute(() -> onMessageTextAsync(id, message));
+    public void __onMessageText__(String id, String message) {
+        executor.execute(() -> {
+            this.onMessageText(id, message);
+            System.gc();
+        });
     }
 
     @Override
-    public void onMessageBinary(String id, byte[] bytes) {
-        executor.execute(() -> onMessageBinaryAsync(id, bytes));
+    public void __onMessageBinary__(String id, byte[] bytes) {
+        executor.execute(() -> {
+            this.onMessageBinary(id, bytes);
+            System.gc();
+        });
     }
 
     @Override
-    public void onMessagePong(String id, byte[] bytes) {
-        executor.execute(() -> onMessagePongAsync(id, bytes));
+    public void __onMessagePong__(String id, byte[] bytes) {
+        executor.execute(() -> {
+            this.onMessagePong(id, bytes);
+            System.gc();
+        });
     }
 
     @Override
-    public void onMessagePing(String id, byte[] bytes) {
-        executor.execute(() -> onMessagePingAsync(id, bytes));
+    public void __onMessagePing__(String id, byte[] bytes) {
+        executor.execute(() -> {
+            this.onMessagePing(id, bytes);
+            System.gc();
+        });
     }
 
     @Override
-    public void onMessageContinuation(String id, byte[] bytes) {
-        executor.execute(() -> onMessageContinuationAsync(id, bytes));
+    public void __onMessageContinuation__(String id, byte[] bytes) {
+        executor.execute(() -> {
+            this.onMessageContinuation(id, bytes);
+            System.gc();
+        });
     }
-
-
-    public abstract void onOpenAsync(String id);
-    public abstract void onCloseAsync(String id);
-    public abstract void onErrorAsync(String id, Throwable throwable);
-    public abstract void onMessageTextAsync(String id, String message);
-    public abstract void onMessageBinaryAsync(String id, byte[] bytes);
-    public abstract void onMessagePongAsync(String id, byte[] bytes);
-    public abstract void onMessagePingAsync(String id, byte[] bytes);
-    public abstract void onMessageContinuationAsync(String id, byte[] bytes);
-
-
-
 }

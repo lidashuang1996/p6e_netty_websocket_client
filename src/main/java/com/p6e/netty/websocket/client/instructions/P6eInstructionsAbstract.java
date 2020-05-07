@@ -5,7 +5,7 @@ import com.p6e.netty.websocket.client.product.P6eProduct;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.websocketx.*;
 
-public abstract class P6eInstructionsAbstract implements P6eInstructions {
+public abstract class P6eInstructionsAbstract implements P6eInstructionsShell, P6eInstructions {
 
     public static final String TEXT_MESSAGE_TYPE = "1";
     public static final String BINARY_MESSAGE_TYPE = "2";
@@ -60,5 +60,53 @@ public abstract class P6eInstructionsAbstract implements P6eInstructions {
             // client.getChannelHandlerContext() 实时更新的动态获取的
             client.getChannelHandlerContext().channel().writeAndFlush(webSocketFrame.retain());
         }
+    }
+
+    @Override
+    public void __onOpen__(String id) {
+        this.onOpen(id);
+        System.gc();
+    }
+
+    @Override
+    public void __onClose__(String id) {
+        this.onClose(id);
+        System.gc();
+    }
+
+    @Override
+    public void __onError__(String id, Throwable throwable) {
+        this.onError(id, throwable);
+        System.gc();
+    }
+
+    @Override
+    public void __onMessageText__(String id, String message) {
+        this.onMessageText(id, message);
+        System.gc();
+    }
+
+    @Override
+    public void __onMessageBinary__(String id, byte[] bytes) {
+        this.onMessageBinary(id, bytes);
+        System.gc();
+    }
+
+    @Override
+    public void __onMessagePong__(String id, byte[] bytes) {
+        this.onMessagePong(id, bytes);
+        System.gc();
+    }
+
+    @Override
+    public void __onMessagePing__(String id, byte[] bytes) {
+        this.onMessagePing(id, bytes);
+        System.gc();
+    }
+
+    @Override
+    public void __onMessageContinuation__(String id, byte[] bytes) {
+        this.onMessageContinuation(id, bytes);
+        System.gc();
     }
 }

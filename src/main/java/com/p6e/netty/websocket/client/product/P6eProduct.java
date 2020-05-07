@@ -1,6 +1,6 @@
 package com.p6e.netty.websocket.client.product;
 
-import com.p6e.netty.websocket.client.instructions.P6eInstructions;
+import com.p6e.netty.websocket.client.instructions.P6eInstructionsShell;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,7 +33,7 @@ public class P6eProduct {
     // URI 地址
     private URI uri;
     // 回调函数
-    private P6eInstructions instructions;
+    private P6eInstructionsShell instructions;
     // 请求的头部
     private Map<String, Object> httpHeaders = new HashMap<>();
 
@@ -106,19 +106,19 @@ public class P6eProduct {
         }
     }
 
-    public P6eProduct(URI uri, P6eInstructions instructions) {
+    public P6eProduct(URI uri, P6eInstructionsShell instructions) {
         this.generateId();
         this.setUri(uri);
         this.setInstructions(instructions);
     }
 
-    public P6eProduct(String id, URI uri, P6eInstructions instructions) {
+    public P6eProduct(String id, URI uri, P6eInstructionsShell instructions) {
         this.setId(id);
         this.setUri(uri);
         this.setInstructions(instructions);
     }
 
-    public P6eProduct(String url, P6eInstructions instructions) {
+    public P6eProduct(String url, P6eInstructionsShell instructions) {
         try {
             this.generateId();
             this.setUri(new URI(url));
@@ -128,7 +128,7 @@ public class P6eProduct {
         }
     }
 
-    public P6eProduct(String id, String url, P6eInstructions instructions) {
+    public P6eProduct(String id, String url, P6eInstructionsShell instructions) {
         try {
             this.setId(id);
             this.setUri(new URI(url));
@@ -138,21 +138,21 @@ public class P6eProduct {
         }
     }
 
-    public P6eProduct(URI uri, Map<String, Object> httpHeaders, P6eInstructions instructions) {
+    public P6eProduct(URI uri, Map<String, Object> httpHeaders, P6eInstructionsShell instructions) {
         this.generateId();
         this.setUri(uri);
         this.setHttpHeaders(httpHeaders);
         this.setInstructions(instructions);
     }
 
-    public P6eProduct(String id, URI uri, Map<String, Object> httpHeaders, P6eInstructions instructions) {
+    public P6eProduct(String id, URI uri, Map<String, Object> httpHeaders, P6eInstructionsShell instructions) {
         this.setId(id);
         this.setUri(uri);
         this.setHttpHeaders(httpHeaders);
         this.setInstructions(instructions);
     }
 
-    public P6eProduct(String url, Map<String, Object> httpHeaders, P6eInstructions instructions) {
+    public P6eProduct(String url, Map<String, Object> httpHeaders, P6eInstructionsShell instructions) {
         try {
             this.generateId();
             this.setUri(new URI(url));
@@ -163,7 +163,7 @@ public class P6eProduct {
         }
     }
 
-    public P6eProduct(String id, String url, Map<String, Object> httpHeaders, P6eInstructions instructions) {
+    public P6eProduct(String id, String url, Map<String, Object> httpHeaders, P6eInstructionsShell instructions) {
         try {
             this.setId(id);
             this.setUri(new URI(url));
@@ -207,12 +207,6 @@ public class P6eProduct {
 
     public void setHost(String host) {
         if (host == null) throw new RuntimeException("P6eProduct.class host parameter exception.");
-        String[] hs = host.split("\\.");
-        if (hs.length != 4) throw new RuntimeException("P6eProduct.class host parameter exception.");
-        for (int i = 0; i < 4; i++) {
-            int t = Integer.valueOf(hs[i]);
-            if (0 > t || t > 255) throw new RuntimeException("P6eProduct.class host parameter exception.");
-        }
         this.host = host;
     }
 
@@ -253,11 +247,11 @@ public class P6eProduct {
         this.setPath(uri.getRawPath());
     }
 
-    public P6eInstructions getInstructions() {
+    public P6eInstructionsShell getInstructions() {
         return instructions;
     }
 
-    public void setInstructions(P6eInstructions instructions) {
+    public void setInstructions(P6eInstructionsShell instructions) {
         this.instructions = instructions;
     }
 

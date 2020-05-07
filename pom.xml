@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.p6e.netty.websocket</groupId>
+    <groupId>com.p6e.netty</groupId>
     <artifactId>websocket-client</artifactId>
     <name>p6e_netty_websocket_client</name>
     <version>0.0.1</version>

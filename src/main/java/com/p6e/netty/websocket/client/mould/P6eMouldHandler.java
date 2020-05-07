@@ -1,8 +1,9 @@
 package com.p6e.netty.websocket.client.mould;
 
-import com.p6e.netty.websocket.client.instructions.P6eInstructions;
 import com.p6e.netty.websocket.client.instructions.P6eInstructionsDefault;
+import com.p6e.netty.websocket.client.instructions.P6eInstructionsShell;
 import com.p6e.netty.websocket.client.product.P6eProduct;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.*;
@@ -13,7 +14,7 @@ public class P6eMouldHandler implements ChannelInboundHandler {
     private boolean isLog = false;
 
     private String id;
-    private P6eInstructions instructions;
+    private P6eInstructionsShell instructions;
     private ChannelPromise channelPromise;
     private P6eMouldClient p6eMouldClient;
     private WebSocketClientHandshaker webSocketClientHandshaker;
@@ -59,36 +60,47 @@ public class P6eMouldHandler implements ChannelInboundHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         if (isLog) System.out.println(" ** channelRead ** ");
         Channel channel = ctx.channel();
+        // 写入最新的 ChannelHandlerContext
+        p6eMouldClient.setChannelHandlerContext(ctx);
         if (!webSocketClientHandshaker.isHandshakeComplete()) {
             try {
                 // 结束握手
                 webSocketClientHandshaker.finishHandshake(channel, (FullHttpResponse) msg);
                 channelPromise.setSuccess(); // 成功
-                instructions.onOpen(id); // 初始化
+                instructions.__onOpen__(id); // 初始化
             } catch (WebSocketHandshakeException e) {
                 channelPromise.setFailure(e); // 关闭
             }
         } else if (msg instanceof FullHttpResponse) {
             FullHttpResponse response = (FullHttpResponse) msg;
             p6eMouldClient.removeCache();
-            instructions.onError(id, new Exception("Unexpected FullHttpResponse [ "
+            instructions.__onError__(id, new Exception("Unexpected FullHttpResponse [ "
                     + response.status() + " ] ==> " + response.content().toString(CharsetUtil.UTF_8)));
-            instructions.onClose(id);
+            instructions.__onClose__(id);
         } else {
-            // 写入最新的 ChannelHandlerContext
-            p6eMouldClient.setChannelHandlerContext(ctx);
-            // 写入最新的缓存数据
             WebSocketFrame frame = (WebSocketFrame) msg;
             if (frame instanceof BinaryWebSocketFrame) {
-                instructions.onMessageBinary(id, frame.content().array());
+                ByteBuf byteBuf = frame.content();
+                byte[] bytes = new byte[byteBuf.readableBytes()];
+                byteBuf.readBytes(bytes);
+                instructions.__onMessageBinary__(id, bytes);
             } else if (frame instanceof TextWebSocketFrame) {
-                instructions.onMessageText(id, ((TextWebSocketFrame) frame).text());
+                instructions.__onMessageText__(id, ((TextWebSocketFrame) frame).text());
             } else if (frame instanceof PongWebSocketFrame) {
-                instructions.onMessagePong(id, frame.content().array());
+                ByteBuf byteBuf = frame.content();
+                byte[] bytes = new byte[byteBuf.readableBytes()];
+                byteBuf.readBytes(bytes);
+                instructions.__onMessagePong__(id, bytes);
             } else if (frame instanceof PingWebSocketFrame) {
-                instructions.onMessagePing(id, frame.content().array());
+                ByteBuf byteBuf = frame.content();
+                byte[] bytes = new byte[byteBuf.readableBytes()];
+                byteBuf.readBytes(bytes);
+                instructions.__onMessagePing__(id, bytes);
             } else if (frame instanceof ContinuationWebSocketFrame) {
-                instructions.onMessageContinuation(id, frame.content().array());
+                ByteBuf byteBuf = frame.content();
+                byte[] bytes = new byte[byteBuf.readableBytes()];
+                byteBuf.readBytes(bytes);
+                instructions.__onMessageContinuation__(id, bytes);
             }
         }
     }
@@ -120,14 +132,14 @@ public class P6eMouldHandler implements ChannelInboundHandler {
         if (isLog) System.out.println(" ** handlerRemoved ** ");
 
         p6eMouldClient.removeCache();
-        instructions.onClose(id);
+        instructions.__onClose__(id);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if (isLog) System.out.println(" ** exceptionCaught ** ");
 
-        instructions.onError(id, cause);
+        instructions.__onError__(id, cause);
     }
 
     public ChannelPromise handshakeFuture() {

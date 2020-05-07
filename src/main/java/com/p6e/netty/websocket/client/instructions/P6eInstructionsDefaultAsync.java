@@ -3,42 +3,42 @@ package com.p6e.netty.websocket.client.instructions;
 public class P6eInstructionsDefaultAsync extends P6eInstructionsAbstractAsync {
 
     @Override
-    public void onOpenAsync(String id) {
-        System.out.println("[ " + id + " ] -- onOpenAsync --");
+    public void onOpen(String id) {
+
     }
 
     @Override
-    public void onCloseAsync(String id) {
-        System.out.println("[ " + id + " ] -- onCloseAsync --");
+    public void onClose(String id) {
+
     }
 
     @Override
-    public void onErrorAsync(String id, Throwable throwable) {
-        System.out.println("[ " + id + " ] -- onErrorAsync --");
+    public void onError(String id, Throwable throwable) {
+
     }
 
     @Override
-    public void onMessageTextAsync(String id, String message) {
-        System.out.println("[ " + id + " ] -- onMessageTextAsync --" + message);
+    public void onMessageText(String id, String message) {
+
     }
 
     @Override
-    public void onMessageBinaryAsync(String id, byte[] bytes) {
-        System.out.println("[ " + id + " ] -- onMessageBinaryAsync --" + new String(bytes));
+    public void onMessageBinary(String id, byte[] bytes) {
+
     }
 
     @Override
-    public void onMessagePongAsync(String id, byte[] bytes) {
-        System.out.println("[ " + id + " ] -- onMessagePongAsync --" + new String(bytes));
+    public void onMessagePong(String id, byte[] bytes) {
+
     }
 
     @Override
-    public void onMessagePingAsync(String id, byte[] bytes) {
-        System.out.println("[ " + id + " ] -- onMessagePingAsync --" + new String(bytes));
+    public void onMessagePing(String id, byte[] bytes) {
+
     }
 
     @Override
-    public void onMessageContinuationAsync(String id, byte[] bytes) {
-        System.out.println("[ " + id + " ] -- onMessageContinuationAsync --");
+    public void onMessageContinuation(String id, byte[] bytes) {
+
     }
 }

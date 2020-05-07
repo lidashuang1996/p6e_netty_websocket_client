@@ -12,13 +12,15 @@ public class Main {
             @Override
             public void onMessageText(String id, String message) {
                 System.out.println(" BIO  => " + id + "  MESSAGE => " + message);
+                this.sendMessage("1", "11111111111111");
             }
         }));
-        application.connect(new P6eProduct("ws://127.0.0.1:10000/ws", new P6eInstructionsDefaultAsync() {
-            @Override
-            public void onMessageTextAsync(String id, String message) {
-                System.out.println(" NIO  => " + id + "  MESSAGE => " + message);
-            }
-        }));
+//        application.connect(new P6eProduct("ws://127.0.0.1:10000/ws", new P6eInstructionsDefaultAsync() {
+//            @Override
+//            public void onMessageTextAsync(String id, String message) {
+//                System.out.println(" NIO  => " + id + "  MESSAGE => " + message);
+//                this.sendMessage("1", "22222222222222222222");
+//            }
+//        }));
     }
 }

@@ -6,7 +6,11 @@ import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
+import javax.net.ssl.SSLException;
 import java.util.Map;
 
 public abstract class P6eMould {
@@ -67,7 +71,12 @@ public abstract class P6eMould {
 
             this.bootstrap.handler(new ChannelInitializer() {
                 @Override
-                protected void initChannel(Channel ch) {
+                protected void initChannel(Channel ch) throws SSLException {
+                    if ("WSS".equals(product.getAgreement().toUpperCase())) {
+                        SslContext sslContext = SslContextBuilder.forClient()
+                                .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+                        ch.pipeline().addLast(sslContext.newHandler(ch.alloc(), product.getHost(), product.getPort()));
+                    }
                     ch.pipeline().addLast(new HttpClientCodec());
                     ch.pipeline().addLast(new HttpObjectAggregator(8192));
                     ch.pipeline().addLast("P6eMouldHandler", p6eMouldHandler);
