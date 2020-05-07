@@ -6,6 +6,8 @@ import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
@@ -72,6 +74,7 @@ public abstract class P6eMould {
             this.bootstrap.handler(new ChannelInitializer() {
                 @Override
                 protected void initChannel(Channel ch) throws SSLException {
+                    // ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG));
                     if ("WSS".equals(product.getAgreement().toUpperCase())) {
                         SslContext sslContext = SslContextBuilder.forClient()
                                 .trustManager(InsecureTrustManagerFactory.INSTANCE).build();

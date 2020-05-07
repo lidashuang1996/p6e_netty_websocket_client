@@ -83,6 +83,7 @@ public class P6eMouldHandler implements ChannelInboundHandler {
                 ByteBuf byteBuf = frame.content();
                 byte[] bytes = new byte[byteBuf.readableBytes()];
                 byteBuf.readBytes(bytes);
+                byteBuf.release();
                 instructions.__onMessageBinary__(id, bytes);
             } else if (frame instanceof TextWebSocketFrame) {
                 instructions.__onMessageText__(id, ((TextWebSocketFrame) frame).text());
@@ -90,16 +91,19 @@ public class P6eMouldHandler implements ChannelInboundHandler {
                 ByteBuf byteBuf = frame.content();
                 byte[] bytes = new byte[byteBuf.readableBytes()];
                 byteBuf.readBytes(bytes);
+                byteBuf.release();
                 instructions.__onMessagePong__(id, bytes);
             } else if (frame instanceof PingWebSocketFrame) {
                 ByteBuf byteBuf = frame.content();
                 byte[] bytes = new byte[byteBuf.readableBytes()];
                 byteBuf.readBytes(bytes);
+                byteBuf.release();
                 instructions.__onMessagePing__(id, bytes);
             } else if (frame instanceof ContinuationWebSocketFrame) {
                 ByteBuf byteBuf = frame.content();
                 byte[] bytes = new byte[byteBuf.readableBytes()];
                 byteBuf.readBytes(bytes);
+                byteBuf.release();
                 instructions.__onMessageContinuation__(id, bytes);
             }
         }
