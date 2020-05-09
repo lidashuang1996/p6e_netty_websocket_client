@@ -64,7 +64,7 @@ public class P6eModelHandler implements ChannelInboundHandler {
             try {
                 webSocketClientHandshaker.finishHandshake(channel, (FullHttpResponse) msg); // 结束握手
                 id = UUID.randomUUID().toString().replaceAll("-", "").toLowerCase();
-                P6eWebSocketClient p6eWebSocketClient = new P6eWebSocketClient(channel);
+                P6eWebSocketClient p6eWebSocketClient = new P6eWebSocketClient(id, channel);
                 p6eModelCache.put(id, p6eWebSocketClient);
                 if (id != null) p6eContextConverter.__onOpen__(p6eWebSocketClient); // 初始化
             } catch (WebSocketHandshakeException e) {

@@ -12,8 +12,10 @@ import io.netty.handler.codec.http.websocketx.*;
  */
 public class P6eWebSocketClient {
     private Channel channel;
+    private String id;
 
-    public P6eWebSocketClient(Channel channel) {
+    public P6eWebSocketClient(String id, Channel channel) {
+        this.id = id;
         this.channel = channel;
     }
 
@@ -59,5 +61,9 @@ public class P6eWebSocketClient {
 
     public Channel getChannel() {
         return channel;
+    }
+
+    public String getId() {
+        return id;
     }
 }
