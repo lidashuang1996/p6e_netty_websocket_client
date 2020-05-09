@@ -1,8 +1,11 @@
 package com.p6e.netty.websocket.client;
 
 import com.p6e.netty.websocket.client.actuator.P6eActuatorAbstractAsync;
+import com.p6e.netty.websocket.client.model.P6eModel;
 import com.p6e.netty.websocket.client.model.P6eNioModel;
 import com.p6e.netty.websocket.client.config.P6eConfig;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.EventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +16,22 @@ public class P6eWebSocketClientTest {
     public static void main(String[] args)  {
         P6eWebSocketClientLogger.init();
         P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run(P6eNioModel.class);
+//        P6eWebsocketClientApplication application2 = P6eWebsocketClientApplication.run(new P6eModel() {
+//            @Override
+//            protected void option(Bootstrap bootstrap) {
+//
+//            }
+//
+//            @Override
+//            protected void channel(Bootstrap bootstrap) {
+//
+//            }
+//
+//            @Override
+//            protected EventLoopGroup group(Bootstrap bootstrap) {
+//                return null;
+//            }
+//        });
         application.connect(new P6eConfig("ws://127.0.0.1:10000/ws", new P6eActuatorAbstractAsync() {
             @Override
             public void onOpen(P6eWebSocketClient webSocket) {

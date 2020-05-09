@@ -18,8 +18,16 @@ public class P6eWebsocketClientApplication {
         return new P6eWebsocketClientApplication(P6eNioModel.class, new P6eConfig[] {});
     }
 
+    public static P6eWebsocketClientApplication run(P6eModel model) {
+        return new P6eWebsocketClientApplication(model, new P6eConfig[] {});
+    }
+
     public static P6eWebsocketClientApplication run(Class<? extends P6eModel> model) {
         return new P6eWebsocketClientApplication(model, new P6eConfig[] {});
+    }
+
+    public static P6eWebsocketClientApplication run(P6eModel model, P6eConfig... products) {
+        return new P6eWebsocketClientApplication(model, products);
     }
 
     public static P6eWebsocketClientApplication run(Class<? extends P6eModel> model, P6eConfig... products) {
@@ -32,6 +40,10 @@ public class P6eWebsocketClientApplication {
         } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    public P6eWebsocketClientApplication(P6eModel model, P6eConfig[] products) {
+        this.p6eModel = model.connect(products);
     }
 
     public P6eWebsocketClientApplication connect(P6eConfig product) {
