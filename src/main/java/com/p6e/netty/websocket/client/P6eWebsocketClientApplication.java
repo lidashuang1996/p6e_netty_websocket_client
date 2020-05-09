@@ -1,71 +1,71 @@
 package com.p6e.netty.websocket.client;
 
-import com.p6e.netty.websocket.client.mould.P6eMould;
-import com.p6e.netty.websocket.client.mould.P6eMouldClient;
-import com.p6e.netty.websocket.client.mould.P6eMouldClientCache;
-import com.p6e.netty.websocket.client.mould.P6eNioMould;
-import com.p6e.netty.websocket.client.product.P6eProduct;
+import com.p6e.netty.websocket.client.actuator.P6eActuatorAbstractAsync;
+import com.p6e.netty.websocket.client.model.P6eModel;
+import com.p6e.netty.websocket.client.model.P6eModelCache;
+import com.p6e.netty.websocket.client.model.P6eNioModel;
+import com.p6e.netty.websocket.client.config.P6eConfig;
 
-import java.util.Map;
-
+/**
+ * Netty Web Socket 应用类
+ * @author LiDaShuang
+ * @version 1.0.0
+ */
 public class P6eWebsocketClientApplication {
-    private P6eMould mould;
+    private P6eModel p6eModel;
 
     public static P6eWebsocketClientApplication run() {
-        return new P6eWebsocketClientApplication(P6eNioMould.class, new P6eProduct[] {});
+        return new P6eWebsocketClientApplication(P6eNioModel.class, new P6eConfig[] {});
     }
 
-    public static P6eWebsocketClientApplication run(Class<? extends P6eMould> mould) {
-        return new P6eWebsocketClientApplication(mould, new P6eProduct[] {});
+    public static P6eWebsocketClientApplication run(Class<? extends P6eModel> model) {
+        return new P6eWebsocketClientApplication(model, new P6eConfig[] {});
     }
 
-    public static P6eWebsocketClientApplication run(Class<? extends P6eMould> mould, P6eProduct... products) {
-        return new P6eWebsocketClientApplication(mould, products);
+    public static P6eWebsocketClientApplication run(Class<? extends P6eModel> model, P6eConfig... products) {
+        return new P6eWebsocketClientApplication(model, products);
     }
 
-    public P6eWebsocketClientApplication(Class<? extends P6eMould> mould, P6eProduct[] products) {
+    public P6eWebsocketClientApplication(Class<? extends P6eModel> model, P6eConfig[] products) {
         try {
-            this.mould = mould.newInstance().run().connect(products);
+            this.p6eModel = model.newInstance().run().connect(products);
         } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }
 
-    public P6eWebsocketClientApplication connect(P6eProduct product) {
-        this.mould.connect(product);
+    public P6eWebsocketClientApplication connect(P6eConfig product) {
+        this.p6eModel.connect(product);
         return this;
     }
 
-    public P6eWebsocketClientApplication connect(P6eProduct[] products) {
-        this.mould.connect(products);
+    public P6eWebsocketClientApplication connect(P6eConfig[] products) {
+        this.p6eModel.connect(products);
         return this;
     }
 
     public P6eWebsocketClientApplication close() {
-        this.mould.close();
+        this.p6eModel.close();
         return this;
     }
 
     public P6eWebsocketClientApplication close(String id) {
-        this.mould.close(id);
+        this.p6eModel.close(id);
         return this;
     }
 
     public P6eWebsocketClientApplication close(String[] ids) {
-        this.mould.close(ids);
+        this.p6eModel.close(ids);
         return this;
     }
 
-    public P6eMouldClientCache getMouldClientCache() {
-        return this.mould.getP6eMouldClientCache();
+    public void destroy() {
+        this.p6eModel.close();
+        P6eActuatorAbstractAsync.destroyThreadPool();
     }
 
-    public P6eMouldClient getMouldClient(String id) {
-        return this.mould.getMouldClient(id);
-    }
-
-    public Map<String, P6eMouldClient> getMouldClientMap() {
-        return this.mould.getMouldClientMap();
+    public P6eModelCache getP6eModelCache() {
+        return this.p6eModel.getP6eModelCache();
     }
 
 }
