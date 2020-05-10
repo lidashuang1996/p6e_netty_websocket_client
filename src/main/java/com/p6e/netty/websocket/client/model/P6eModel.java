@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -107,7 +108,7 @@ public abstract class P6eModel {
                             initWebSocketVersion(config.getVersion()),
                             null,
                             false,
-                            initHttpHeaders(config.getHttpHeaders())
+                            initHttpHeaders(config)
                     ), p6eModelCache, config.getActuator()));
                 }
             });
@@ -162,15 +163,24 @@ public abstract class P6eModel {
 
     /**
      * 初始话请求的头部
-     * @param map WebSocket 请求头部配置信息
+     * @param config WebSocket 请求头部配置信息
      * @return HttpHeaders
      */
-    private HttpHeaders initHttpHeaders(Map<String, Object> map) {
+    private HttpHeaders initHttpHeaders(P6eConfig config) {
         HttpHeaders httpHeaders = new DefaultHttpHeaders();
-        if (map != null) {
-            for (String key : map.keySet()) httpHeaders.add(key, map.get(key));
+        if (config != null) {
+            Map<String, Object> headers = config.getHttpHeaders();
+            if (headers != null) {
+                for (String key : headers.keySet()) httpHeaders.add(key, headers.get(key));
+            }
+            List<P6eConfig.Cookie> cookies = config.getCookies();
+            if (cookies != null && cookies.size() > 0) {
+                StringBuilder sb = new StringBuilder();
+                for (P6eConfig.Cookie cookie : cookies) sb.append("; ").append(cookie.content());
+                httpHeaders.add("Cookie", sb.substring(2));
+            }
         }
-        return new DefaultHttpHeaders();
+        return httpHeaders;
     }
 
     /**

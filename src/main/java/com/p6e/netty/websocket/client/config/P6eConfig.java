@@ -3,8 +3,7 @@ package com.p6e.netty.websocket.client.config;
 import com.p6e.netty.websocket.client.actuator.P6eBaseActuator;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 这是 Web Socket Client 配置文件的对象
@@ -18,7 +17,7 @@ public class P6eConfig {
      * @author LiDaShuang
      * @version 1.0.0
      */
-    public class Agreement {
+    public final static class Agreement {
         public static final String WS = "ws";
         public static final String WSS = "wss";
     }
@@ -28,7 +27,7 @@ public class P6eConfig {
      * @author LiDaShuang
      * @version 1.0.0
      */
-    public class Version {
+    public final static class Version {
         public static final String V00 = "V00";
         public static final String V07 = "V07";
         public static final String V08 = "V08";
@@ -41,13 +40,40 @@ public class P6eConfig {
      * @author LiDaShuang
      * @version 1.0.0
      */
-    public class LogLevel {
+    public final static class LogLevel {
         public static final String NONE = "NONE";
         public static final String TRACE = "TRACE";
         public static final String DEBUG = "DEBUG";
         public static final String INFO = "INFO";
         public static final String WARN = "WARN";
         public static final String ERROR = "ERROR";
+    }
+
+    /**
+     * 封装 Cookies 的对象
+     * @author LiDaShuang
+     * @version 1.0.0
+     */
+    public static class Cookie {
+        private String name;
+        private String value;
+
+        public Cookie(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public String content() {
+            return name + "=" + value;
+        }
     }
 
     // 端口
@@ -71,6 +97,8 @@ public class P6eConfig {
     // Netty 日志的等级
     private String nettyLogLevel = LogLevel.NONE;
 
+    // 请求的 Cookie
+    private List<Cookie> cookies = new ArrayList<>();
     // 请求的头部
     private Map<String, Object> httpHeaders = new HashMap<>();
 
@@ -94,15 +122,29 @@ public class P6eConfig {
         this.setUri(uri);
     }
 
+    public P6eConfig(URI uri, Cookie... cookies) {
+        this.setUri(uri);
+        this.addCookies(cookies);
+    }
+
+    public P6eConfig(String url, Cookie... cookies) {
+        try {
+            this.setUri(new URI(url));
+            this.addCookies(cookies);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public P6eConfig(URI uri, Map<String, Object> httpHeaders) {
         this.setUri(uri);
-        this.setHttpHeaders(httpHeaders);
+        this.addHttpHeaders(httpHeaders);
     }
 
     public P6eConfig(String url, Map<String, Object> httpHeaders) {
         try {
             this.setUri(new URI(url));
-            this.setHttpHeaders(httpHeaders);
+            this.addHttpHeaders(httpHeaders);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -122,21 +164,72 @@ public class P6eConfig {
         }
     }
 
+    public P6eConfig(URI uri, Map<String, Object> httpHeaders, List<Cookie> cookies) {
+        this.setUri(uri);
+        this.addHttpHeaders(httpHeaders);
+        this.addCookies(cookies);
+    }
+
+    public P6eConfig(String url, Map<String, Object> httpHeaders, List<Cookie> cookies) {
+        try {
+            this.setUri(new URI(url));
+            this.addHttpHeaders(httpHeaders);
+            this.addCookies(cookies);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public P6eConfig(URI uri, Map<String, Object> httpHeaders, P6eBaseActuator actuator) {
         this.setUri(uri);
-        this.setHttpHeaders(httpHeaders);
+        this.addHttpHeaders(httpHeaders);
         this.setActuator(actuator);
     }
 
     public P6eConfig(String url, Map<String, Object> httpHeaders, P6eBaseActuator actuator) {
         try {
             this.setUri(new URI(url));
-            this.setHttpHeaders(httpHeaders);
+            this.addHttpHeaders(httpHeaders);
             this.setActuator(actuator);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
+
+    public P6eConfig(URI uri, List<Cookie> cookies, P6eBaseActuator actuator) {
+        this.setUri(uri);
+        this.addCookies(cookies);
+        this.setActuator(actuator);
+    }
+
+    public P6eConfig(String url, List<Cookie> cookies, P6eBaseActuator actuator) {
+        try {
+            this.setUri(new URI(url));
+            this.addCookies(cookies);
+            this.setActuator(actuator);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public P6eConfig(URI uri, Map<String, Object> httpHeaders, List<Cookie> cookies, P6eBaseActuator actuator) {
+        this.setUri(uri);
+        this.addHttpHeaders(httpHeaders);
+        this.addCookies(cookies);
+        this.setActuator(actuator);
+    }
+
+    public P6eConfig(String url, Map<String, Object> httpHeaders, List<Cookie> cookies, P6eBaseActuator actuator) {
+        try {
+            this.setUri(new URI(url));
+            this.addHttpHeaders(httpHeaders);
+            this.addCookies(cookies);
+            this.setActuator(actuator);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public int getPort() {
         return port;
@@ -212,8 +305,32 @@ public class P6eConfig {
         return httpHeaders;
     }
 
-    public void setHttpHeaders(Map<String, Object> httpHeaders) {
+    public List<Cookie> getCookies() {
+        return cookies;
+    }
+
+    public void addCookies(Cookie... cookies) {
+        this.cookies.addAll(Arrays.asList(cookies));
+    }
+
+    public void addCookies(List<Cookie> cookies) {
+        this.cookies.addAll(cookies);
+    }
+
+    public void clearCookies() {
+        this.cookies.clear();
+    }
+
+    public void addHttpHeaders(Map<String, Object> httpHeaders) {
         this.httpHeaders = httpHeaders;
+    }
+
+    public void delHttpHeaders(String headerName) {
+        this.httpHeaders.remove(headerName);
+    }
+
+    public void clearHttpHeaders() {
+        this.httpHeaders.clear();
     }
 
     public boolean isNettyLoggerBool() {

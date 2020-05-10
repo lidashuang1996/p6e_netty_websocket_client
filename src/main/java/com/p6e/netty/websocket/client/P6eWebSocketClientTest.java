@@ -6,6 +6,11 @@ import com.p6e.netty.websocket.client.config.P6eConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
 public class P6eWebSocketClientTest {
 
     /** 注入的日志对象 */
@@ -18,7 +23,13 @@ public class P6eWebSocketClientTest {
 
         // 2. 连接 websocket 的地址
         // 请求的请求头数据
-        application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
+        Map<String, Object> map = new Hashtable<>();
+        map.put("name", "31232131");
+        List<P6eConfig.Cookie> cookies = new ArrayList<>();
+        cookies.add(new P6eConfig.Cookie("CookiesName", "CookiesValue"));
+        application.connect(new P6eConfig("ws://127.0.0.1:7510/ws?name=123",
+                map,
+                cookies,
                 new P6eActuatorDefault())); // 同步默认的回调
     }
 }
