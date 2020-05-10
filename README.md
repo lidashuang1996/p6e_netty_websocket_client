@@ -462,7 +462,6 @@ application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
 ## 依赖的架包
 
 + [io.netty_netty-all (4.1.48.Final)](https://github.com/netty/netty)
-+ org.slf4j_slf4j-api (1.7.30)
 + ch.qos.logback_logback-classic (1.2.3)
 
 ## 使用该项目的有
