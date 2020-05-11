@@ -2,6 +2,7 @@ package com.p6e.netty.websocket.client;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.*;
 
 /**
@@ -11,56 +12,57 @@ import io.netty.handler.codec.http.websocketx.*;
  * @version 1.0.0
  */
 public class P6eWebSocketClient {
-    private Channel channel;
-    private String id;
 
-    public P6eWebSocketClient(String id, Channel channel) {
+    private String id;
+    private ChannelHandlerContext channelHandlerContext;
+
+    public P6eWebSocketClient(String id, ChannelHandlerContext channelHandlerContext) {
         this.id = id;
-        this.channel = channel;
+        this.channelHandlerContext = channelHandlerContext;
     }
 
     public void sendTextMessage(String message) {
-        this.channel.writeAndFlush(new TextWebSocketFrame(message));
+        this.channelHandlerContext.channel().writeAndFlush(new TextWebSocketFrame(message));
     }
 
     public void sendBinaryMessage(byte[] message) {
-        this.channel.writeAndFlush(new BinaryWebSocketFrame(Unpooled.wrappedBuffer(message)));
+        this.channelHandlerContext.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.wrappedBuffer(message)));
     }
 
     public void sendPingMessage(byte[] message) {
-        this.channel.writeAndFlush(new PingWebSocketFrame(Unpooled.wrappedBuffer(message)));
+        this.channelHandlerContext.channel().writeAndFlush(new PingWebSocketFrame(Unpooled.wrappedBuffer(message)));
     }
 
     public void sendPongMessage(byte[] message) {
-        this.channel.writeAndFlush(new PongWebSocketFrame(Unpooled.wrappedBuffer(message)));
+        this.channelHandlerContext.channel().writeAndFlush(new PongWebSocketFrame(Unpooled.wrappedBuffer(message)));
     }
 
     public void sendContinuationMessage(byte[] message) {
-        this.channel.writeAndFlush(new ContinuationWebSocketFrame(Unpooled.wrappedBuffer(message)));
+        this.channelHandlerContext.channel().writeAndFlush(new ContinuationWebSocketFrame(Unpooled.wrappedBuffer(message)));
     }
 
     public void close() {
-        channel.close();
+        channelHandlerContext.channel().close();
     }
 
     public boolean isOpen() {
-        return channel.isOpen();
+        return channelHandlerContext.channel().isOpen();
     }
 
     public boolean isActive() {
-        return channel.isActive();
+        return channelHandlerContext.channel().isActive();
     }
 
     public boolean isRegistered() {
-        return channel.isRegistered();
+        return channelHandlerContext.channel().isRegistered();
     }
 
     public boolean isWritable() {
-        return channel.isWritable();
+        return channelHandlerContext.channel().isWritable();
     }
 
     public Channel getChannel() {
-        return channel;
+        return channelHandlerContext.channel();
     }
 
     public String getId() {

@@ -70,10 +70,11 @@ public abstract class P6eModel {
      */
     public P6eModel run() {
         try {
+            this.option(this.bootstrap);
             this.bootstrap
                     .option(ChannelOption.TCP_NODELAY,true)
-                    .option(ChannelOption.SO_KEEPALIVE, true);
-            this.option(this.bootstrap);
+                    .option(ChannelOption.SO_KEEPALIVE, true)
+                    .option(ChannelOption.AUTO_READ, true);
             this.channel(this.bootstrap);
             this.eventLoopGroup = this.group(this.bootstrap);
         } catch (Exception e) {
@@ -89,6 +90,13 @@ public abstract class P6eModel {
      */
     public P6eModel connect(final P6eConfig config) {
         try {
+            P6eModelHandler p6eModelHandler = new P6eModelHandler(WebSocketClientHandshakerFactory.newHandshaker(
+                    config.getUri(),
+                    initWebSocketVersion(config.getVersion()),
+                    null,
+                    false,
+                    initHttpHeaders(config)
+            ), p6eModelCache, config.getActuator());
             this.bootstrap.handler(new ChannelInitializer() {
                 @Override
                 protected void initChannel(Channel ch) throws SSLException {
@@ -96,22 +104,17 @@ public abstract class P6eModel {
                         LogLevel logLevel = initLogLevel(config.getNettyLogLevel());
                         if (logLevel != null) ch.pipeline().addLast(new LoggingHandler(logLevel));
                     }
-                    if (P6eConfig.Agreement.WSS.equals(config.getAgreement().toUpperCase())) {
+                    if (P6eConfig.Agreement.WSS.toUpperCase().equals(config.getAgreement().toUpperCase())) {
                         SslContext sslContext = SslContextBuilder.forClient()
                                 .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
                         ch.pipeline().addLast(sslContext.newHandler(ch.alloc(), config.getHost(), config.getPort()));
                     }
                     ch.pipeline().addLast(new HttpClientCodec());
                     ch.pipeline().addLast(new HttpObjectAggregator(8192));
-                    ch.pipeline().addLast(new P6eModelHandler(WebSocketClientHandshakerFactory.newHandshaker(
-                            config.getUri(),
-                            initWebSocketVersion(config.getVersion()),
-                            null,
-                            false,
-                            initHttpHeaders(config)
-                    ), p6eModelCache, config.getActuator()));
+                    ch.pipeline().addLast(p6eModelHandler);
                 }
             });
+
             logger.debug("[ connect ] config ==> " + config);
             this.bootstrap.connect(config.getHost(), config.getPort()).sync();
         } catch (Exception e) {
@@ -177,7 +180,7 @@ public abstract class P6eModel {
             if (cookies != null && cookies.size() > 0) {
                 StringBuilder sb = new StringBuilder();
                 for (P6eConfig.Cookie cookie : cookies) sb.append("; ").append(cookie.content());
-                httpHeaders.add("Cookie", sb.substring(2));
+                httpHeaders.add("cookie", sb.substring(2));
             }
         }
         return httpHeaders;

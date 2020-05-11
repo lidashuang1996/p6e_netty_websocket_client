@@ -2,7 +2,7 @@ package com.p6e.netty.websocket.client.model;
 
 import com.p6e.netty.websocket.client.P6eWebSocketClient;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class P6eModelCache {
 
-    private Map<String, P6eWebSocketClient> p6eMouldClientMap = new Hashtable<>();
+    private Map<String, P6eWebSocketClient> p6eMouldClientMap = new HashMap<>();
 
     public void put(String id, P6eWebSocketClient client) {
         if (id != null) p6eMouldClientMap.put(id, client);
