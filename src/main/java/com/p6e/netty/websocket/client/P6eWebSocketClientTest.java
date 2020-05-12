@@ -13,12 +13,12 @@ public class P6eWebSocketClientTest {
 
     public static void main(String[] args)  {
         P6eWebSocketClientLogger.init(); // 初始化日志对象
+
         // 1. 创建 P6eWebsocketClientApplication 对象
         P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run(P6eNioModel.class);
 
         // 请求的请求头数据
-        application.connect(new P6eConfig("wss://danmuproxy.douyu.com:8506/",
-                new P6eActuatorDefault())); // 同步默认的回调
+        application.connect(new P6eConfig("wss://danmuproxy.douyu.com:8506/", new P6eActuatorDefault())); // 同步默认的回调
 
     }
 }
