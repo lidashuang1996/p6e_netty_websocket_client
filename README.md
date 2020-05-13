@@ -2,9 +2,9 @@
 
 
 
-> p6e_netty_websocket_client 是使用 java 语言，采用 netty 框架，开发的一个 websocket client 版本。 
+> p6e_netty_websocket_client 是使用 java 语言，采用 netty 框架，开发的一个 websocket client 应用。
 
-## 如何使用？
+## 1. 如何使用？
 
 ### 只需要 3 步即可
 
@@ -15,405 +15,169 @@ public class P6eWebSocketClientTest {
     private static final Logger logger = LoggerFactory.getLogger(P6eWebSocketClientTest.class);
 
     public static void main(String[] args)  {
-        P6eWebSocketClientLogger.init(); // 初始化日志对象
-        // 1. 创建 P6eWebsocketClientApplication 对象
-        P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run(P6eNioModel.class);
-        // 2. 连接 websocket 的地址
-        application.connect(new P6eConfig("ws://111.229.238.242:7510/ws", new P6eActuatorAbstractAsync() {
-            // 3. 对回调的事件进行处理
-            @Override
-            public void onOpen(P6eWebSocketClient webSocket) {
-                logger.info("[ 1 ] ==> " + webSocket);
-            }
 
-            @Override
-            public void onClose(P6eWebSocketClient webSocket) {
-                logger.info("[ 2 ] ==> " + webSocket);
-            }
+        // 初始化日志对象
+        P6eWebSocketClientLogger.init();
 
-            @Override
-            public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
-                logger.info("[ 3 ] ==> " + webSocket + " throwable ==> " + throwable.getMessage());
-            }
+        // 1. 创建 application 对象
+        P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run();
 
-            @Override
-            public void onMessageText(P6eWebSocketClient webSocket, String message) {
-                logger.info("[ 4 ] ==> " + webSocket + " message ==> " + message);
-            }
+        // 2. 客户端 websocket 连接
+        application.connect(
+            new P6eConfig("WSS:// OR WS://", new P6eActuatorDefault())); // 同步默认的回调
 
-            @Override
-            public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
-                logger.info("[ 5 ] ==> " + webSocket + " message ==> " + new String(message));
-            }
+        // 3. 关闭指定 ID 的客户端
+        // application.close("");
 
-            @Override
-            public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
-                logger.info("[ 6 ] ==> " + webSocket + " message ==> " + new String(message));
-            }
-
-            @Override
-            public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
-                logger.info("[ 7 ] ==> " + webSocket + " message ==> " + new String(message));
-            }
-
-            @Override
-            public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
-                logger.info("[ 8 ] ==> " + webSocket + " message ==> " + new String(message));
-            }
-        }));
-    }
-}
-
-```
-
-### 请求携带参数
-
-``` java
-public class P6eWebSocketClientTest {
-    /** 注入的日志对象 */
-    private static final Logger logger = LoggerFactory.getLogger(P6eWebSocketClientTest.class);
-    public static void main(String[] args)  {
-        P6eWebSocketClientLogger.init(); // 初始化日志对象
-        // 1. 创建 P6eWebsocketClientApplication 对象
-        P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run(P6eNioModel.class);
-        // 2. 连接 websocket 的地址
-        // web socket 只能通过 get 请求，然后升级协议
-        // ?name=123 携带的参数可以传入到后台服务器
-        application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123", new P6eActuatorDefault()));
+        // 3. 关闭所有客户端
+        // application.close();
+        
+        // 摧毁的方法
+        // application.destroy();
     }
 }
 ```
 
-### 自定义请求头
+### 修改处理消息的模式
 
 ``` java
-public class P6eWebSocketClientTest {
+// 默认的实现
+// P6eWebsocketClientApplication application 
+// 				= P6eWebsocketClientApplication.run(P6eNioModel.class);
 
-    /** 注入的日志对象 */
-    private static final Logger logger = LoggerFactory.getLogger(P6eWebSocketClientTest.class);
+// 自定义的实现
+P6eWebsocketClientApplication application 
+    = P6eWebsocketClientApplication.run(new P6eModel() {
+        @Override
+        protected void option(Bootstrap bootstrap) {
 
-    public static void main(String[] args)  {
-        P6eWebSocketClientLogger.init(); // 初始化日志对象
-        // 1. 创建 P6eWebsocketClientApplication 对象
-        P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run(P6eNioModel.class);
-        // 2. 连接 websocket 的地址
-        // 请求的请求头数据
-        Map<String, Object> httpHeaders = new HashMap<>();
-        httpHeaders.put("auth", "123456789");
-        httpHeaders.put("name", "test");
-        // 添加 地址 请求头 回调处理函数
-        application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123", httpHeaders, new P6eActuatorDefault()));
-    }
-}
+        }
+
+        @Override
+        protected void channel(Bootstrap bootstrap) {
+
+        }
+
+        @Override
+        protected EventLoopGroup group(Bootstrap bootstrap) {
+            return null;
+        }
+    });
 ```
 
-### 携带 Cookie
+### 请求携带参数（header / cookies）
 
 ``` java
-P6eWebSocketClientLogger.init(); // 初始化日志对象
-// 1. 创建 P6eWebsocketClientApplication 对象
+// 创建 application 对象
 P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run(P6eNioModel.class);
-// 2. 连接 websocket 的地址
-// 请求的请求头数据
-Map<String, Object> map = new Hashtable<>();
-map.put("name", "31232131");
-// Cookis 的数据
+// 自定义 请求头 和 cookie
+Map<String, Object> headers = new HashMap<>();
+headers.put("h_name", "h_value");
+// cookies 数据
 List<P6eConfig.Cookie> cookies = new ArrayList<>();
-cookies.add(new P6eConfig.Cookie("CookiesName", "CookiesValue"));
-application.connect(new P6eConfig("ws://127.0.0.1:7510/ws?name=123",
-                                  map,
-                                  cookies,
-                                  new P6eActuatorDefault())); // 同步默认的回调
+cookies.add(new P6eConfig.Cookie("cookie_name", "cookie_value"));
+// 连接服务
+application.connect(new P6eConfig("WSS:// OR WS://", headers, cookies, new P6eActuatorDefault()));
 ```
 
 ### 回调函数同步处理
 
 ``` java
-// 请求的请求头数据
-application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123", new P6eActuatorDefault())); // 同步默认的回调
+// 创建 application 对象
+P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run(P6eNioModel.class);
+// 连接服务
+application.connect(new P6eConfig("WSS:// OR WS://", new P6eActuatorDefault()));
 
-application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
-                                  new P6eActuatorDefault() {
-                                      @Override
-                                      public void onOpen(P6eWebSocketClient webSocket) {
-                                          super.onOpen(webSocket);
-                                      }
+// 连接服务
+application.connect(new P6eConfig("WSS:// OR WS://", new P6eActuatorDefault() {
+    // 重写默认同步处理消息的方法
+    // 自定义选择重写的回调函数
+}));
 
-                                      @Override
-                                      public void onClose(P6eWebSocketClient webSocket) {
-                                          super.onClose(webSocket);
-                                      }
+// 连接服务
+application.connect(new P6eConfig("WSS:// OR WS://", new P6eActuatorAbstract() {
+    // 实现同步抽象接口的方法
+    @Override
+    public void onOpen(P6eWebSocketClient webSocket) { }
 
-                                      @Override
-                                      public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
-                                          super.onError(webSocket, throwable);
-                                      }
+    @Override
+    public void onClose(P6eWebSocketClient webSocket) { }
 
-                                      @Override
-                                      public void onMessageText(P6eWebSocketClient webSocket, String message) {
-                                          super.onMessageText(webSocket, message);
-                                      }
+    @Override
+    public void onError(P6eWebSocketClient webSocket, Throwable throwable) { }
 
-                                      @Override
-                                      public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
-                                          super.onMessageBinary(webSocket, message);
-                                      }
+    @Override
+    public void onMessageText(P6eWebSocketClient webSocket, String message) { }
 
-                                      @Override
-                                      public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
-                                          super.onMessagePong(webSocket, message);
-                                      }
+    @Override
+    public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) { }
 
-                                      @Override
-                                      public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
-                                          super.onMessagePing(webSocket, message);
-                                      }
+    @Override
+    public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) { }
 
-                                      @Override
-                                      public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
-                                          super.onMessageContinuation(webSocket, message);
-                                      }
-                                  })); // 同步默认的回调 - 继承的方式重写
-application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
-                                  new P6eActuatorAbstract() {
-                                      @Override
-                                      public void onOpen(P6eWebSocketClient webSocket) {
+    @Override
+    public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) { }
 
-                                      }
-
-                                      @Override
-                                      public void onClose(P6eWebSocketClient webSocket) {
-
-                                      }
-
-                                      @Override
-                                      public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessageText(P6eWebSocketClient webSocket, String message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-                                  })); // 抽象父类的方式重写
+    @Override
+    public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) { }
+}));
 ```
 
 ### 回调函数异步处理
 
 ``` java
-// 请求的请求头数据
-application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
-                                  new P6eActuatorDefaultAsync())); // 异步默认的回调
-application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
-                                  new P6eActuatorDefaultAsync() {
-                                      @Override
-                                      public void onOpen(P6eWebSocketClient webSocket) {
-                                          super.onOpen(webSocket);
-                                      }
+// 线程池
+ThreadPoolExecutor threadPool = 
+    new ThreadPoolExecutor(0, 30, 60L, 
+                           TimeUnit.SECONDS, new SynchronousQueue<>());
 
-                                      @Override
-                                      public void onClose(P6eWebSocketClient webSocket) {
-                                          super.onClose(webSocket);
-                                      }
+// 创建 application 对象
+// threadPool 线程池用于当前 application 对象创建的异步消息处理
+P6eWebsocketClientApplication application 
+    = P6eWebsocketClientApplication.run(P6eNioModel.class, threadPool);
 
-                                      @Override
-                                      public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
-                                          super.onError(webSocket, throwable);
-                                      }
+// 连接服务
+application.connect(new P6eConfig("WSS:// OR WS://", new P6eActuatorDefaultAsync()));
 
-                                      @Override
-                                      public void onMessageText(P6eWebSocketClient webSocket, String message) {
-                                          super.onMessageText(webSocket, message);
-                                      }
+// 连接服务
+application.connect(new P6eConfig("WSS:// OR WS://", new P6eActuatorDefaultAsync() {
+    // 重写默认异步处理消息的方法
+    // 自定义选择重写的回调函数
+}));
 
-                                      @Override
-                                      public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
-                                          super.onMessageBinary(webSocket, message);
-                                      }
-
-                                      @Override
-                                      public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
-                                          super.onMessagePong(webSocket, message);
-                                      }
-
-                                      @Override
-                                      public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
-                                          super.onMessagePing(webSocket, message);
-                                      }
-
-                                      @Override
-                                      public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
-                                          super.onMessageContinuation(webSocket, message);
-                                      }
-                                  })); // 异步默认的回调 - 继承的方式重写
-application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
-                                  new P6eActuatorAbstractAsync() {
-                                      @Override
-                                      public void onOpen(P6eWebSocketClient webSocket) {
-
-                                      }
-
-                                      @Override
-                                      public void onClose(P6eWebSocketClient webSocket) {
-
-                                      }
-
-                                      @Override
-                                      public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessageText(P6eWebSocketClient webSocket, String message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-                                  })); // 异步抽象父类的方式重写
-```
-
-### 自定义 netty 的处理数据参数
-
-``` java
-P6eWebsocketClientApplication app = P6eWebsocketClientApplication.run(new P6eModel() {
+// 连接服务
+application.connect(new P6eConfig("WSS:// OR WS://", new P6eActuatorAbstractAsync() {
+    // 实现异步抽象接口的方法
     @Override
-    protected void option(Bootstrap bootstrap) {
-
-    }
+    public void onOpen(P6eWebSocketClient webSocket) { }
 
     @Override
-    protected void channel(Bootstrap bootstrap) {
-
-    }
+    public void onClose(P6eWebSocketClient webSocket) { }
 
     @Override
-    protected EventLoopGroup group(Bootstrap bootstrap) {
-        return null;
-    }
-});
+    public void onError(P6eWebSocketClient webSocket, Throwable throwable) { }
 
-// NIO 
-public class P6eNioModel extends P6eModel {
     @Override
-    protected EventLoopGroup group(Bootstrap bootstrap) {
-        EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
-        bootstrap.group(eventLoopGroup);
-        return eventLoopGroup;
-    }
-    @Override
-    protected void option(Bootstrap bootstrap) {
-    }
-    @Override
-    public void channel(Bootstrap bootstrap) {
-        bootstrap.channel(NioSocketChannel.class);
-    }
-}
-```
+    public void onMessageText(P6eWebSocketClient webSocket, String message) { }
 
-### 关闭和摧毁
+    @Override
+    public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) { }
 
-``` java
-// 关闭该 P6eWebsocketClientApplication 下面的所有连接 【不会关闭创建的另一个对象里面的连接】
-application.close();
-// 关闭该 P6eWebsocketClientApplication 下面的所有连接且如果采用了异步回调，摧毁该线程池 
-//【不会摧毁创建的另一个对象里面的连接】
+    @Override
+    public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) { }
+
+    @Override
+    public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) { }
+
+    @Override
+    public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) { }
+}));
+
+// 摧毁的方法
 application.destroy();
 ```
 
-
-
-### 关闭指定 ID 的客户端
-
-``` java
-// 关闭指定 ID 的客户端
-// 如果该 ID 不是这个 application 创建的话
-// 那么是删除不了这个指定 ID 的客户端
-application.close("xxxx");
-// 设置回调函数 获取客户端的 ID 
-application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
-                                  new P6eActuatorAbstractAsync() {
-                                      @Override
-                                      public void onOpen(P6eWebSocketClient webSocket) {
-                                          // 通过 P6eWebSocketClient 对象获取 ID 的参数
-                                          String id = webSocket.getId();
-                                      }
-
-                                      @Override
-                                      public void onClose(P6eWebSocketClient webSocket) {
-
-                                      }
-
-                                      @Override
-                                      public void onError(P6eWebSocketClient webSocket, Throwable throwable) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessageText(P6eWebSocketClient webSocket, String message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessageBinary(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessagePong(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessagePing(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-
-                                      @Override
-                                      public void onMessageContinuation(P6eWebSocketClient webSocket, byte[] message) {
-
-                                      }
-                                  }));
-```
-
-## 什么是 netty ？
+## 2. 什么是 netty ？
 
 > Netty是 *一个异步事件驱动的网络应用程序框架，*用于快速开发可维护的高性能协议服务器和客户端。
 >
@@ -421,7 +185,7 @@ application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
 >
 > GitHub 地址： [https://github.com/netty/netty](https://github.com/netty/netty)
 
-## 什么是 websocket？
+## 3. 什么是 websocket？
 
 > Web Socket 是 HTML5 一种新的协议。它实现了浏览器与服务器全双工通信 (full-duplex)。**一开始的握手需要借助HTTP请求完成**。
 
@@ -459,11 +223,11 @@ application.connect(new P6eConfig("ws://111.229.238.242:7510/ws?name=123",
 >    1. 将 Sec-WebSocket-Key 跟 258EAFA5-E914-47DA-95CA-C5AB0DC85B11 拼接。
 >    2. 通过 SHA1 计算出摘要，并转成 base64 字符串。
 
-## 依赖的架包
+## 4. 依赖的架包
 
 + [io.netty_netty-all (4.1.48.Final)](https://github.com/netty/netty)
 + ch.qos.logback_logback-classic (1.2.3)
 
-## 使用该项目的有
+## 5. 使用该项目的有
 
 + [p6e_broadcast]( https://github.com/lidashuang1996/p6e_broadcast) 获取国内各大直播平台房间数据（弹幕数据，礼物数据 等）项目
