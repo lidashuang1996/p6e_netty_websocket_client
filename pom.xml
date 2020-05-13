@@ -7,7 +7,7 @@
     <groupId>com.p6e.netty</groupId>
     <artifactId>p6e-netty-websocket-client</artifactId>
     <name>p6e-netty-websocket-client</name>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <description>Websocket client written by netty.</description>
 
     <properties>
