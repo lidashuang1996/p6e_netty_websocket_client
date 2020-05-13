@@ -2,10 +2,7 @@ package com.p6e.netty.websocket.client.actuator;
 
 import com.p6e.netty.websocket.client.P6eWebSocketClient;
 import com.p6e.netty.websocket.client.converter.P6eContextConverter;
-
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 实现 P6eActuator 处理类
@@ -18,35 +15,19 @@ public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator implement
 
     /**
      * 创建一个默认的线程池，大小为 30 个线程
+     *
+     * 所有的异步线程的共用一个线程池
      */
-    protected volatile static ThreadPoolExecutor executor = null;
+    protected static ThreadPoolExecutor threadPool = null;
 
-    /**
-     * 摧毁当前异步处理器的线程池
-     */
-    public synchronized static void destroyThreadPool() {
-        if (executor != null) {
-            if (!executor.isShutdown()) executor.shutdown();
-            executor = null;
-        }
-    }
-
-    public P6eActuatorAbstractAsync() {
-        if (executor == null || executor.isShutdown()) {
-            executor = new ThreadPoolExecutor(0, 30,
-                    60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        }
-    }
-
-    public P6eActuatorAbstractAsync(ThreadPoolExecutor threadPool) {
-        destroyThreadPool();
-        executor = threadPool;
+    public static void init(ThreadPoolExecutor tp) {
+        threadPool = tp;
     }
 
     @Override
     public void __onOpen__(P6eWebSocketClient websocket) {
-        if (executor == null || executor.isShutdown()) return;
-        executor.execute(() -> {
+        if (threadPool == null || threadPool.isShutdown()) return;
+        threadPool.execute(() -> {
             this.onOpen(websocket);
             System.gc(); // 回收掉生成的一次性的对象，避免内存泄漏
         });
@@ -54,8 +35,8 @@ public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator implement
 
     @Override
     public void __onClose__(P6eWebSocketClient websocket) {
-        if (executor == null || executor.isShutdown()) return;
-        executor.execute(() -> {
+        if (threadPool == null || threadPool.isShutdown()) return;
+        threadPool.execute(() -> {
             this.onClose(websocket);
             System.gc(); // 回收掉生成的一次性的对象，避免内存泄漏
         });
@@ -63,8 +44,8 @@ public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator implement
 
     @Override
     public void __onError__(P6eWebSocketClient websocket, Throwable throwable) {
-        if (executor == null || executor.isShutdown()) return;
-        executor.execute(() -> {
+        if (threadPool == null || threadPool.isShutdown()) return;
+        threadPool.execute(() -> {
             this.onOpen(websocket);
             System.gc(); // 回收掉生成的一次性的对象，避免内存泄漏
         });
@@ -72,8 +53,8 @@ public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator implement
 
     @Override
     public void __onMessageText__(P6eWebSocketClient websocket, String message) {
-        if (executor == null || executor.isShutdown()) return;
-        executor.execute(() -> {
+        if (threadPool == null || threadPool.isShutdown()) return;
+        threadPool.execute(() -> {
             this.onMessageText(websocket, message);
             System.gc(); // 回收掉生成的一次性的对象，避免内存泄漏
         });
@@ -81,8 +62,8 @@ public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator implement
 
     @Override
     public void __onMessageBinary__(P6eWebSocketClient websocket, byte[] message) {
-        if (executor == null || executor.isShutdown()) return;
-        executor.execute(() -> {
+        if (threadPool == null || threadPool.isShutdown()) return;
+        threadPool.execute(() -> {
             this.onMessageBinary(websocket, message);
             System.gc(); // 回收掉生成的一次性的对象，避免内存泄漏
         });
@@ -90,8 +71,8 @@ public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator implement
 
     @Override
     public void __onMessagePong__(P6eWebSocketClient websocket, byte[] message) {
-        if (executor == null || executor.isShutdown()) return;
-        executor.execute(() -> {
+        if (threadPool == null || threadPool.isShutdown()) return;
+        threadPool.execute(() -> {
             this.onMessagePong(websocket, message);
             System.gc(); // 回收掉生成的一次性的对象，避免内存泄漏
         });
@@ -99,8 +80,8 @@ public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator implement
 
     @Override
     public void __onMessagePing__(P6eWebSocketClient websocket, byte[] message) {
-        if (executor == null || executor.isShutdown()) return;
-        executor.execute(() -> {
+        if (threadPool == null || threadPool.isShutdown()) return;
+        threadPool.execute(() -> {
             this.onMessagePing(websocket, message);
             System.gc(); // 回收掉生成的一次性的对象，避免内存泄漏
         });
@@ -108,8 +89,8 @@ public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator implement
 
     @Override
     public void __onMessageContinuation__(P6eWebSocketClient websocket, byte[] message) {
-        if (executor == null || executor.isShutdown()) return;
-        executor.execute(() -> {
+        if (threadPool == null || threadPool.isShutdown()) return;
+        threadPool.execute(() -> {
             this.onMessageContinuation(websocket, message);
             System.gc(); // 回收掉生成的一次性的对象，避免内存泄漏
         });

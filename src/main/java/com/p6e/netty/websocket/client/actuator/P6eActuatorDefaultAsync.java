@@ -4,6 +4,8 @@ import com.p6e.netty.websocket.client.P6eWebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
  * 对异步处理器的默认实现
  * @author LiDaShuang
