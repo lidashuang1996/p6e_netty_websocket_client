@@ -102,6 +102,9 @@ public class P6eConfig {
     // 请求的头部
     private Map<String, Object> httpHeaders = new HashMap<>();
 
+    // 是否自定义证书
+    private String sslPath;
+
     public P6eConfig() {
         try {
             this.setUri(new URI("ws://127.0.0.1:10000"));
@@ -357,6 +360,14 @@ public class P6eConfig {
         this.version = version;
     }
 
+    public String getSslPath() {
+        return sslPath;
+    }
+
+    public void setSslPath(String sslPath) {
+        this.sslPath = sslPath;
+    }
+
     @Override
     public String toString() {
         return "{" + "\"port\":" +
@@ -379,8 +390,12 @@ public class P6eConfig {
                 nettyLoggerBool +
                 ",\"nettyLogLevel\":\"" +
                 nettyLogLevel + '\"' +
+                ",\"cookies\":" +
+                cookies +
                 ",\"httpHeaders\":" +
                 httpHeaders +
+                ",\"sslPath\":\"" +
+                sslPath + '\"' +
                 '}';
     }
 }

@@ -24,9 +24,14 @@ public class P6eWebSocketClientLogger {
 
     /** 加载 logback 配置信息 */
     public synchronized static void init() {
+        init("./logback.xml");
+    }
+
+    /** 加载 logback 配置信息 */
+    public synchronized static void init(String name) {
         if (!bool) {
             try {
-                URL filePath = P6eWebSocketClientLogger.class.getClassLoader().getResource("./logback.xml");
+                URL filePath = P6eWebSocketClientLogger.class.getClassLoader().getResource(name);
                 if (filePath == null) throw new NullPointerException(P6eWebSocketClientLogger.class.toString() + " filePath");
                 LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
                 JoranConfigurator configurator = new JoranConfigurator();

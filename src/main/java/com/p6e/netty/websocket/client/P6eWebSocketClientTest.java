@@ -33,8 +33,10 @@ public class P6eWebSocketClientTest {
         // 1. 创建 application 对象
         P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run(P6eNioModel.class);
 
+        P6eConfig p6eConfig = new P6eConfig("wss://wsproxy.douyu.com:6671/", new P6eActuatorDefault());
+        p6eConfig.setSslPath("zhenshu.cer");
         // 2. 客户端 websocket 连接
-        application.connect(new P6eConfig("WSS:// OR WS://", new P6eActuatorDefault())); // 同步默认的回调
+        application.connect(p6eConfig); // 同步默认的回调
 
         // 3. 关闭指定 ID 的客户端
         // application.close("");
@@ -43,7 +45,7 @@ public class P6eWebSocketClientTest {
         // application.close();
 
         // 4. 摧毁的方法
-        application.destroy();
+        // application.destroy();
 
     }
 

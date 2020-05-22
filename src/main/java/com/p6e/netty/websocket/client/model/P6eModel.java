@@ -16,6 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URL;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.List;
 import java.util.Map;
 
@@ -105,9 +112,35 @@ public abstract class P6eModel {
                         if (logLevel != null) ch.pipeline().addLast(new LoggingHandler(logLevel));
                     }
                     if (P6eConfig.Agreement.WSS.toUpperCase().equals(config.getAgreement().toUpperCase())) {
-                        SslContext sslContext = SslContextBuilder.forClient()
-                                .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
-                        ch.pipeline().addLast(sslContext.newHandler(ch.alloc(), config.getHost(), config.getPort()));
+                        if (config.getSslPath() == null) {
+                            SslContext sslContext = SslContextBuilder.forClient()
+                                    .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+                            ch.pipeline().addLast(sslContext.newHandler(ch.alloc(), config.getHost(), config.getPort()));
+                        } else {
+                            File file = new File(config.getSslPath());
+                            if (!file.exists()) {
+                                URL fileURL = this.getClass().getClassLoader().getResource(config.getSslPath());
+                                if (fileURL != null) file = new File(fileURL.getFile());
+                            }
+                            if (!file.exists()) throw new RuntimeException(
+                                    "certificate file not found. file path => " + config.getSslPath());
+                            try {
+                                // 加载服务器端证书，创建 keystore
+                                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                                Certificate certificate = cf.generateCertificate(new FileInputStream(file));
+                                String keyStoreType = KeyStore.getDefaultType();
+                                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+                                keyStore.load(null, null);
+                                keyStore.setCertificateEntry("ca", certificate);
+                                String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+                                TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+                                tmf.init(keyStore);
+                                SslContext sslContext = SslContextBuilder.forClient().trustManager(tmf).build();
+                                ch.pipeline().addLast(sslContext.newHandler(ch.alloc(), config.getHost(), config.getPort()));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                     ch.pipeline().addLast(new HttpClientCodec());
                     ch.pipeline().addLast(new HttpObjectAggregator(8192));
