@@ -1,6 +1,7 @@
 package com.p6e.netty.websocket.client.model;
 
 import com.p6e.netty.websocket.client.P6eWebSocketClient;
+import com.p6e.netty.websocket.client.actuator.P6eActuatorDefault;
 import com.p6e.netty.websocket.client.converter.P6eContextConverter;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -30,7 +31,7 @@ public class P6eModelHandler implements ChannelInboundHandler {
     public P6eModelHandler(WebSocketClientHandshaker webSocketClientHandshaker,
                            P6eModelCache p6eModelCache, P6eContextConverter p6eContextConverter) {
         this.p6eModelCache = p6eModelCache;
-        this.p6eContextConverter = p6eContextConverter;
+        this.p6eContextConverter = p6eContextConverter == null ? new P6eActuatorDefault() : p6eContextConverter;
         this.webSocketClientHandshaker = webSocketClientHandshaker;
     }
 
@@ -64,25 +65,28 @@ public class P6eModelHandler implements ChannelInboundHandler {
         logger.debug("( " + id + " ) [ channelRead ] ==> " + ctx);
         try {
             Channel channel = ctx.channel();
-            if (!webSocketClientHandshaker.isHandshakeComplete()) {
+            if (!webSocketClientHandshaker.isHandshakeComplete()) { // 判断是否完成握手
                 try {
                     webSocketClientHandshaker.finishHandshake(channel, (FullHttpResponse) msg); // 结束握手
-                    id = UUID.randomUUID().toString().replaceAll("-", "").toLowerCase();
-                    P6eWebSocketClient p6eWebSocketClient = new P6eWebSocketClient(id, ctx);
+                    id = UUID.randomUUID().toString().replaceAll("-", "").toLowerCase(); // 客户端生成唯一ID
+                    P6eWebSocketClient p6eWebSocketClient = new P6eWebSocketClient(id, ctx); // 创建 P6eWebSocketClient
                     p6eModelCache.put(id, p6eWebSocketClient);
                     if (id != null) p6eContextConverter.__onOpen__(p6eWebSocketClient); // 初始化
+                    else logger.error("[ CLIENT ID ] ==> NULL.");
                 } catch (WebSocketHandshakeException e) {
                     e.printStackTrace();
                 }
-            } else if (msg instanceof FullHttpResponse) {
+            } else if (msg instanceof FullHttpResponse) { // 判断是否为 HTTP 返回的状态码
                 FullHttpResponse response = (FullHttpResponse) msg;
                 if (id != null) {
                     P6eWebSocketClient webSocket = p6eModelCache.get(id);
                     p6eModelCache.del(id);
-                    if (id != null) p6eContextConverter.__onError__(webSocket, new Exception("Unexpected FullHttpResponse [ "
-                            + response.status() + " ] ==> " + response.content().toString(CharsetUtil.UTF_8)));
-                    if (id != null) p6eContextConverter.__onClose__(webSocket);
-                }
+                    p6eContextConverter.__onError__(webSocket,
+                            new Exception("Unexpected FullHttpResponse [ "
+                                    + response.status() + " ] ==> "
+                                    + response.content().toString(CharsetUtil.UTF_8)));
+                    p6eContextConverter.__onClose__(webSocket);
+                } else logger.error("[ CLIENT ID ] ==> NULL.");
             } else {
                 if (id != null) {
                     P6eWebSocketClient webSocket = p6eModelCache.get(id);
@@ -104,7 +108,7 @@ public class P6eModelHandler implements ChannelInboundHandler {
                             p6eContextConverter.__onMessageContinuation__(webSocket, bytes);
                         }
                     }
-                }
+                } else logger.error("[ CLIENT ID ] ==> NULL.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -134,20 +138,18 @@ public class P6eModelHandler implements ChannelInboundHandler {
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) {
         logger.debug("( " + id + " ) [ handlerRemoved ] ==> " + ctx);
-        p6eModelCache.del(id);
-        if (id != null) p6eContextConverter.__onClose__(p6eModelCache.get(id));
+        if (id != null) {
+            p6eModelCache.del(id);
+            p6eContextConverter.__onClose__(p6eModelCache.get(id));
+        }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
         logger.debug("( " + id + " ) [ exceptionCaught ] ==> " + ctx);
+        cause.printStackTrace();
         if (id != null) p6eContextConverter.__onError__(p6eModelCache.get(id), cause);
-        ctx.close();
+        ctx.close(); // 关闭管道
     }
-
-//    public ChannelPromise handshakeFuture() {
-//        return this.channelPromise;
-//    }
 
 }

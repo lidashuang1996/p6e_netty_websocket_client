@@ -1,7 +1,6 @@
 package com.p6e.netty.websocket.client.actuator;
 
 import com.p6e.netty.websocket.client.P6eWebSocketClient;
-import com.p6e.netty.websocket.client.converter.P6eContextConverter;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -11,7 +10,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author LiDaShuang
  * @version 1.0.0
  */
-public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator implements P6eContextConverter, P6eActuator {
+public abstract class P6eActuatorAbstractAsync extends P6eBaseActuator {
 
     /**
      * 创建一个默认的线程池，大小为 30 个线程

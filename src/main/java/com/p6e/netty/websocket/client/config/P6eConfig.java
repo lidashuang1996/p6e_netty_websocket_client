@@ -241,10 +241,17 @@ public class P6eConfig {
     private void setPort(int port) {
         this.port = port;
         if (port < 0) {
-            if (Agreement.WS.equals(this.getAgreement())) this.port = 80;
-            else if (Agreement.WSS.equals(this.getAgreement())) this.port = 443;
-            else {
-                throw new RuntimeException(this.getClass().toString() + " port parameter exception.");
+            try {
+                if (Agreement.WS.equals(this.getAgreement().toLowerCase())) this.port = 80;
+                else if (Agreement.WSS.equals(this.getAgreement().toLowerCase())) this.port = 443;
+                else throw new RuntimeException(this.getClass().toString() + " port parameter exception.");
+                this.uri = new URI(this.uri.getScheme()
+                        + "://" + this.uri.getHost()
+                        + ":" + this.getPort()
+                        + this.uri.getRawPath()
+                        + (this.uri.getQuery() == null ? "" : "?" + this.uri.getQuery()));
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -288,12 +295,21 @@ public class P6eConfig {
     }
 
     public void setUri(URI uri) {
-        this.uri = uri;
-        this.setAgreement(uri.getScheme());
-        this.setHost(uri.getHost());
-        this.setPort(uri.getPort());
-        this.setParam(uri.getQuery());
-        this.setPath(uri.getRawPath());
+        try {
+            this.uri = uri;
+            this.uri = new URI(this.uri.getScheme().toLowerCase()
+                    + "://" + this.uri.getHost().toLowerCase()
+                    + (this.uri.getPort() < 0 ? "" : ":" + this.uri.getPort())
+                    + this.uri.getRawPath().toLowerCase()
+                    + (this.uri.getQuery() == null ? "" : "?" + this.uri.getQuery().toLowerCase()));
+            this.setAgreement(this.uri.getScheme());
+            this.setHost(this.uri.getHost());
+            this.setPort(this.uri.getPort());
+            this.setParam(this.uri.getQuery());
+            this.setPath(this.uri.getRawPath());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
     public P6eBaseActuator getActuator() {
@@ -325,7 +341,11 @@ public class P6eConfig {
     }
 
     public void addHttpHeaders(Map<String, Object> httpHeaders) {
-        this.httpHeaders = httpHeaders;
+        if (httpHeaders != null) {
+            for (String key : httpHeaders.keySet()) {
+                this.httpHeaders.put(key, httpHeaders.get(key));
+            }
+        }
     }
 
     public void delHttpHeaders(String headerName) {

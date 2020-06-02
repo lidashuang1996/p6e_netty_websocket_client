@@ -35,6 +35,13 @@
             <version>1.2.3</version>
         </dependency>
 
+        <!-- 测试工具 JAR -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+
     </dependencies>
 
     <build>

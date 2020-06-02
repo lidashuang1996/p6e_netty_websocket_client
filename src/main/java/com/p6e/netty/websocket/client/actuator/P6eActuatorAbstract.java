@@ -1,7 +1,6 @@
 package com.p6e.netty.websocket.client.actuator;
 
 import com.p6e.netty.websocket.client.P6eWebSocketClient;
-import com.p6e.netty.websocket.client.converter.P6eContextConverter;
 
 /**
  * 实现 P6eActuator 处理类
@@ -10,7 +9,7 @@ import com.p6e.netty.websocket.client.converter.P6eContextConverter;
  * @author LiDaShuang
  * @version 1.0.0
  */
-public abstract class P6eActuatorAbstract extends P6eBaseActuator implements P6eContextConverter, P6eActuator {
+public abstract class P6eActuatorAbstract extends P6eBaseActuator {
 
     @Override
     public void __onOpen__(P6eWebSocketClient websocket) {

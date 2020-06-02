@@ -9,20 +9,17 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.*;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
+import java.security.cert.*;
 import java.util.List;
 import java.util.Map;
 
@@ -107,15 +104,16 @@ public abstract class P6eModel {
             this.bootstrap.handler(new ChannelInitializer() {
                 @Override
                 protected void initChannel(Channel ch) throws SSLException {
-                    if (config.isNettyLoggerBool()) {
+                    if (config.isNettyLoggerBool()) { // 是否开启 NETTY DEBUG 模式
                         LogLevel logLevel = initLogLevel(config.getNettyLogLevel());
                         if (logLevel != null) ch.pipeline().addLast(new LoggingHandler(logLevel));
                     }
+                    // 是否为 WSS 协议的连接
                     if (P6eConfig.Agreement.WSS.toUpperCase().equals(config.getAgreement().toUpperCase())) {
-                        if (config.getSslPath() == null) {
+                        if (config.getSslPath() == null) { // 不指定 SSL 证书的方式
                             SslContext sslContext = SslContextBuilder.forClient()
                                     .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
-                            ch.pipeline().addLast(sslContext.newHandler(ch.alloc(), config.getHost(), config.getPort()));
+                            ch.pipeline().addLast(sslContext.newHandler(ch.alloc()));
                         } else {
                             File file = new File(config.getSslPath());
                             if (!file.exists()) {
@@ -124,19 +122,21 @@ public abstract class P6eModel {
                             }
                             if (!file.exists()) throw new RuntimeException(
                                     "certificate file not found. file path => " + config.getSslPath());
-                            try {
-                                // 加载服务器端证书，创建 keystore
+                            try { // 加载自定义的证书
                                 CertificateFactory cf = CertificateFactory.getInstance("X.509");
                                 Certificate certificate = cf.generateCertificate(new FileInputStream(file));
-                                String keyStoreType = KeyStore.getDefaultType();
-                                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+                                String alias = ((X509Certificate) certificate).getSubjectDN().toString();
+                                KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
                                 keyStore.load(null, null);
-                                keyStore.setCertificateEntry("ca", certificate);
-                                String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-                                TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+                                keyStore.setCertificateEntry(alias, certificate);
+                                TrustManagerFactory tmf =
+                                        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                                 tmf.init(keyStore);
-                                SslContext sslContext = SslContextBuilder.forClient().trustManager(tmf).build();
-                                ch.pipeline().addLast(sslContext.newHandler(ch.alloc(), config.getHost(), config.getPort()));
+                                SslContext s = SslContextBuilder.forClient()
+                                        .trustManager(tmf)
+                                        .clientAuth(ClientAuth.NONE)
+                                        .build();
+                                ch.pipeline().addLast(s.newHandler(ch.alloc()));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -147,7 +147,6 @@ public abstract class P6eModel {
                     ch.pipeline().addLast(p6eModelHandler);
                 }
             });
-
             logger.debug("[ connect ] config ==> " + config);
             this.bootstrap.connect(config.getHost(), config.getPort()).sync();
         } catch (Exception e) {

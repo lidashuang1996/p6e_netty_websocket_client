@@ -33,8 +33,8 @@ public class P6eWebSocketClientTest {
         // 1. 创建 application 对象
         P6eWebsocketClientApplication application = P6eWebsocketClientApplication.run(P6eNioModel.class);
 
-        P6eConfig p6eConfig = new P6eConfig("wss://wsproxy.douyu.com:6671/", new P6eActuatorDefault());
-        p6eConfig.setSslPath("zhenshu.cer");
+        P6eConfig p6eConfig = new P6eConfig("WS:// OR WSS://", new P6eActuatorDefault());
+        p6eConfig.setSslPath("");
         // 2. 客户端 websocket 连接
         application.connect(p6eConfig); // 同步默认的回调
 
